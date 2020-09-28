@@ -1,0 +1,36 @@
+---
+title: "state"
+author: "Yousuf Ali"
+date: "9/27/2020"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+df_state <- read_csv('data/us_states_covid19_daily.csv')
+```
+
+```{r}
+df_state_long <- df_state %>% 
+    select(date,state,positive,negative) %>% #only 4 columns
+    drop_na() %>% #drop missing value
+    filter(!(state %in% c('MP', 'PR', 'VI', 'AS', 'GU'))) %>% #drop not state value
+    group_by(state) %>% 
+    summarise_at(vars(positive, negative), funs(sum)) %>% #total
+    pivot_longer(cols = c(positive, negative), names_to = "results", values_to = "total") #make long table
+```
+
+```{r}
+ggplot(df_state_long, aes(x=reorder(state,-total), y=total, fill=results)) +
+    geom_bar(stat='identity', position='dodge')
+```
+
